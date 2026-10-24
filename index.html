@@ -146,9 +146,108 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
     </section>
     
     <section class="subsystem" id="subsystem-7">
-      <h3>7. Payload &amp; Mission Data</h3>
-      <p class="section-intro">Payload failures should be isolated so they do not compromise the bus. In an educational mission, preserving the spacecraft&#x27;s basic health and communications is often more valuable than recovering a failed payload.</p>
-      <div class="table-wrap"><table class="fmea"><thead><tr><th>ID</th><th>Component</th><th>Failure mode</th><th>Likely cause</th><th>Symptoms / detection</th><th>Recovery / mitigation</th><th>S</th><th>O</th><th>D</th><th>RPN</th><th>Risk band</th><th>Evidence status</th></tr></thead><tbody><tr><td><strong>PAY-01</strong></td><td>Payload power switch / regulator</td><td>Payload short or excess draw destabilizes bus</td><td>Internal short, startup inrush, regulator failure, incorrect load assumptions</td><td>Bus sag or resets coincide with payload activation; abnormal payload current.</td><td>Independent payload load switch/current limit; staged startup; payload-off safe mode; test worst-case inrush.</td><td>4</td><td>3</td><td>3</td><td><strong>36</strong></td><td><span class="badge moderate">Moderate</span></td><td>Engineering mode</td></tr><tr><td><strong>PAY-03</strong></td><td>Payload-to-OBC data interface</td><td>Data cannot be transferred or corrupts</td><td>Protocol mismatch, bus congestion, driver fault, timing incompatibility</td><td>Payload power normal but no packets; checksum failures; bus timeouts.</td><td>End-to-end interface tests, defined data contract, checksums, bounded transfer timeout, isolate payload bus where feasible.</td><td>3</td><td>3</td><td>3</td><td><strong>27</strong></td><td><span class="badge moderate">Moderate</span></td><td>Engineering mode</td></tr><tr><td><strong>PAY-04</strong></td><td>Onboard storage / data recorder</td><td>Science data lost or memory fills</td><td>Write failure, corrupted filesystem, excessive data generation, power interruption during write</td><td>Storage errors, missing files, telemetry reports capacity exhaustion.</td><td>File integrity checks, ring buffer/priority policy, atomic writes, downlink critical housekeeping first, test power interruption during writes.</td><td>3</td><td>3</td><td>3</td><td><strong>27</strong></td><td><span class="badge moderate">Moderate</span></td><td>Engineering mode</td></tr><tr><td><strong>PAY-05</strong></td><td>Payload mode / command software</td><td>Payload consumes excessive power or interferes with mission sequence</td><td>Bad command sequence, software deadlock, repeated experiment, resource contention</td><td>Unexpected duty cycle/current; OBC overload; battery state declines during experiment.</td><td>Mission scheduler limits, watchdog, payload duty-cycle cap, independent power-off command, test worst-case software interactions.</td><td>4</td><td>2</td><td>3</td><td><strong>24</strong></td><td><span class="badge moderate">Moderate</span></td><td>Engineering mode</td></tr><tr><td><strong>PAY-02</strong></td><td>Payload sensor / instrument</td><td>No valid measurements</td><td>Sensor damage, calibration drift, radiation upset, thermal excursion</td><td>Payload alive but output saturated, constant, noisy, or out of physical range.</td><td>Range/plausibility checks, calibration before launch, compare against expected environmental envelope, reset/power-cycle if safe.</td><td>3</td><td>3</td><td>2</td><td><strong>18</strong></td><td><span class="badge low">Lower</span></td><td>Engineering mode</td></tr></tbody></table></div>
+      <h3>7. Payload &amp; Mission Data (Optical Imager &amp; Verification)</h3>
+      <p class="section-intro">Payload failures must be contained to prevent bus brownout, while optomechanical integrity must be maintained through launch vibration, orbital vacuum, and thermal cycling.</p>
+      <div class="table-wrap"><table class="fmea"><thead><tr><th>ID</th><th>Component</th><th>Failure mode</th><th>Likely cause</th><th>Symptoms / detection</th><th>Recovery / mitigation</th><th>S</th><th>O</th><th>D</th><th>RPN</th><th>Risk band</th><th>Evidence status</th></tr></thead><tbody>
+      <tr>
+        <td><strong>PAY-01</strong></td>
+        <td>CMOS Image Sensor</td>
+        <td>Sensor pixel burnout / permanent blind spots</td>
+        <td>Attitude slews optical axis into direct Sun; concentrated solar flux on sensor</td>
+        <td>Downlink imagery saturated or displays permanent dead lines; increased dark current.</td>
+        <td>Software sun-avoidance exclusion zone in ADCS; auto-exposure clamp; hardware shutter/baffle protection.</td>
+        <td>5</td>
+        <td>2</td>
+        <td>3</td>
+        <td><strong>30</strong></td>
+        <td><span class="badge moderate">Moderate</span></td>
+        <td>Engineering mode</td>
+      </tr>
+      <tr>
+        <td><strong>PAY-02</strong></td>
+        <td>Optical Window / Stack</td>
+        <td>Window haze / severe loss of image contrast</td>
+        <td>Outgassing condensables (CVCM) deposit on inner sapphire surface in vacuum</td>
+        <td>Image telemetry exhibits low contrast and optical hazing; ground target MTF drops.</td>
+        <td>Enforce NASA low-outgassing rules (CVCM &lt; 0.1%); TVAC bakeout of interior chassis; labyrinth venting.</td>
+        <td>4</td>
+        <td>3</td>
+        <td>3</td>
+        <td><strong>36</strong></td>
+        <td><span class="badge moderate">Moderate</span></td>
+        <td>Engineering mode</td>
+      </tr>
+      <tr>
+        <td><strong>PAY-03</strong></td>
+        <td>Fixed-Focus Lens Assembly</td>
+        <td>Thermal defocusing (loss of infinity focus)</td>
+        <td>Differential expansion between lens barrel and optics across orbit temperature swings</td>
+        <td>Ground imagery is persistently blurred; fine detail lost.</td>
+        <td>Athermalized barrel design; MTF measurement from -20°C to +55°C; lock threads with space-grade staking adhesive.</td>
+        <td>4</td>
+        <td>3</td>
+        <td>3</td>
+        <td><strong>36</strong></td>
+        <td><span class="badge moderate">Moderate</span></td>
+        <td>Engineering mode</td>
+      </tr>
+      <tr>
+        <td><strong>PAY-04</strong></td>
+        <td>Sensor Control Interface (I2C/SPI)</td>
+        <td>Sensor register corruption / capture freeze</td>
+        <td>Radiation Single Event Upset (SEU) in sensor exposure/mode registers</td>
+        <td>Camera fails to trigger; corrupt Bayer output; I2C bus lockup.</td>
+        <td>Autonomous register scrubbing; software watchdog reset of camera power switch; bounded bus timeouts.</td>
+        <td>3</td>
+        <td>3</td>
+        <td>2</td>
+        <td><strong>18</strong></td>
+        <td><span class="badge low">Lower</span></td>
+        <td>Engineering mode</td>
+      </tr>
+      <tr>
+        <td><strong>PAY-05</strong></td>
+        <td>Payload Power Switch / Rail</td>
+        <td>Single Event Latch-up (SEL) / rail overcurrent</td>
+        <td>Heavy ion strike causing CMOS latch-up or internal voltage regulator short</td>
+        <td>Payload 3.3V/2.8V bus sag; sharp current rise; attached subsystem reset.</td>
+        <td>Fast solid-state current limiter with auto-shutoff; power-cycling logic; safe-mode payload disconnect.</td>
+        <td>4</td>
+        <td>2</td>
+        <td>2</td>
+        <td><strong>16</strong></td>
+        <td><span class="badge low">Lower</span></td>
+        <td>Engineering mode</td>
+      </tr>
+      <tr>
+        <td><strong>PAY-06</strong></td>
+        <td>Imaging Dynamics / ADCS</td>
+        <td>Motion smear and rolling-shutter shearing</td>
+        <td>Platform rate exceeds limit or wheel micro-vibrations disturb exposure window</td>
+        <td>Warped, blurry, or stretched surface images downlinked.</td>
+        <td>ADCS interlock flag (block exposure if angular velocity &gt; 0.1°/s); tuned exposure duration; vibration damping.</td>
+        <td>3</td>
+        <td>3</td>
+        <td>2</td>
+        <td><strong>18</strong></td>
+        <td><span class="badge low">Lower</span></td>
+        <td>Engineering mode</td>
+      </tr>
+      <tr>
+        <td><strong>PAY-07</strong></td>
+        <td>Payload Harness &amp; Data Line</td>
+        <td>Intermittent image data corruption or EMI</td>
+        <td>Vibration-induced contact wear, clock noise radiating into TT&amp;C receiver</td>
+        <td>Corrupt image scanlines; packet drops; receiver desensitization during imaging.</td>
+        <td>Differential signaling (LVDS); shielded harness; strain relief; separation from EPS power lines and radio modules.</td>
+        <td>4</td>
+        <td>2</td>
+        <td>3</td>
+        <td><strong>24</strong></td>
+        <td><span class="badge moderate">Moderate</span></td>
+        <td>Engineering mode</td>
+      </tr>
+      </tbody></table></div>
     </section>
     
     <section class="subsystem" id="subsystem-8">
